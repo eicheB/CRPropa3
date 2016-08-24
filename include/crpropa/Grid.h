@@ -5,6 +5,11 @@
 #include "crpropa/Vector3.h"
 #include <vector>
 
+#include <typeinfo>
+
+
+
+
 namespace crpropa {
 
 /** Lower and upper neighbor in a periodically continued unit grid */
@@ -146,10 +151,23 @@ public:
 
 	/** Value of a grid point that is closest to a given position */
 	T closestValue(const Vector3d &position) const {
+		/*std::cout<< "position = " << position << "\n";
+		std::cout<< "gridOrigin = " << gridOrigin << "\n";
+		std::cout<< "spacing = " << spacing << "\n";
+		std::cout<< "(-1 % 440) = " << (-1 % 440) << "\n";
+		std::cout<< "Nx = " << Nx << "\n";*/
 		Vector3d r = (position - gridOrigin) / spacing;
+		//std::cout<< "r = " << r << "\n";
 		int ix = round(r.x);
 		int iy = round(r.y);
 		int iz = round(r.z);
+		/*std::cout<< "reflective = " << reflective<< "\n";
+		std::cout<< "ix, iy, iz = " << ix << iy << iz << "\n";
+		std::cout << typeid(ix).name() << '\n';
+		std::cout << typeid(Nx).name() << '\n';
+		std::cout << typeid(440.).name() << '\n';
+		std::cout<< "(ix % Nx) = " << (ix % int(Nx)) << "\n";
+		std::cout<< "((ix % Nx) + Nx) = " << ((ix % Nx) + Nx) << "\n";*/
 		if (reflective) {
 			while ((ix < 0) or (ix > Nx))
 				ix = 2 * Nx * (ix > Nx) - ix;
@@ -158,10 +176,14 @@ public:
 			while ((iz < 0) or (iz > Nz))
 				iz = 2 * Nz * (iz > Nz) - iz;
 		} else {
-			ix = ((ix % Nx) + Nx) % Nx;
+			ix = ((ix % int(Nx)) + int(Nx)) % int(Nx);
+			iy = ((iy % int(Ny)) + int(Ny)) % int(Ny);
+			iz = ((iz % int(Nz)) + int(Nz)) % int(Nz);
+			/*ix = ((ix % Nx) + Nx) % Nx;
 			iy = ((iy % Ny) + Ny) % Ny;
-			iz = ((iz % Nz) + Nz) % Nz;
+			iz = ((iz % Nz) + Nz) % Nz;*/
 		}
+		//std::cout<< "ix = " << ix << "\n";
 		return get(ix, iy, iz);
 	}
 
@@ -169,9 +191,9 @@ public:
 	T interpolate(const Vector3d &position) const {
 		// position on a unit grid
 		Vector3d r = (position - gridOrigin) / spacing;
-
 		// indices of lower and upper neighbors
 		int ix, iX, iy, iY, iz, iZ;
+		//std::cout<< "reflective = " << reflective << "\n";
 		if (reflective) {
 			reflectiveClamp(r.x, Nx, ix, iX);
 			reflectiveClamp(r.y, Ny, iy, iY);
@@ -189,6 +211,60 @@ public:
 		double fY = 1 - fy;
 		double fz = r.z - floor(r.z);
 		double fZ = 1 - fz;
+
+		// trilinear interpolation (see http://paulbourke.net/miscellaneous/interpolation)
+		T b(0.);
+		//V000 (1 - x) (1 - y) (1 - z) +
+		b += get(ix, iy, iz) * fX * fY * fZ;
+		//V100 x (1 - y) (1 - z) +
+		b += get(iX, iy, iz) * fx * fY * fZ;
+		//V010 (1 - x) y (1 - z) +
+		b += get(ix, iY, iz) * fX * fy * fZ;
+		//V001 (1 - x) (1 - y) z +
+		b += get(ix, iy, iZ) * fX * fY * fz;
+		//V101 x (1 - y) z +
+		b += get(iX, iy, iZ) * fx * fY * fz;
+		//V011 (1 - x) y z +
+		b += get(ix, iY, iZ) * fX * fy * fz;
+		//V110 x y (1 - z) +
+		b += get(iX, iY, iz) * fx * fy * fZ;
+		//V111 x y z
+		b += get(iX, iY, iZ) * fx * fy * fz;
+
+		return b;
+	}
+
+	/** Interpolate the grid at a given position */
+	T interpolate2(const Vector3d &position) const {
+		// return 0 for positions outside of the grid volume
+		if (((position-origin)/spacing).max() > Nx or ((position-origin)/spacing).min() < 0.) {
+			T b(0.);
+			return b;
+		}
+		// position on a unit grid
+		Vector3d r = (position - gridOrigin) / spacing;
+		// indices of lower and upper neighbors
+		int ix, iX, iy, iY, iz, iZ;
+		//std::cout<< "reflective = " << reflective << "\n";
+		if (reflective) {
+			reflectiveClamp(r.x, Nx, ix, iX);
+			reflectiveClamp(r.y, Ny, iy, iY);
+			reflectiveClamp(r.z, Nz, iz, iZ);
+		} else {
+			periodicClamp(r.x, Nx, ix, iX);
+			periodicClamp(r.y, Ny, iy, iY);
+			periodicClamp(r.z, Nz, iz, iZ);
+		}
+
+		// linear fraction to lower and upper neighbors
+		double fx = r.x - floor(r.x);
+		double fX = 1 - fx;
+		double fy = r.y - floor(r.y);
+		double fY = 1 - fy;
+		double fz = r.z - floor(r.z);
+		double fZ = 1 - fz;
+		std::cout<< "fx, fX, fy, fY, fz, fZ = " << fx << ", " << fX << ", " << fy << ", " << fY << ", " << fz << ", " << fZ << "\n";
+		std::cout<< "ix, iX, iy, iY, iz, iZ = " << ix << ", " << iX << ", " << iy << ", " << iY << ", " << iz << ", " << iZ << "\n";
 
 		// trilinear interpolation (see http://paulbourke.net/miscellaneous/interpolation)
 		T b(0.);
