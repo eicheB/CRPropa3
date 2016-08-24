@@ -32,16 +32,20 @@ public:
 class ModulatedMagneticFieldGrid: public MagneticField {
 	ref_ptr<VectorGrid> grid;
 	ref_ptr<ScalarGrid> modGrid;
+	bool interpol2;						// in order to use interpolate2
 public:
 	ModulatedMagneticFieldGrid() {
 	}
 	ModulatedMagneticFieldGrid(ref_ptr<VectorGrid> grid, ref_ptr<ScalarGrid> modGrid);
+	ModulatedMagneticFieldGrid(ref_ptr<VectorGrid> grid, ref_ptr<ScalarGrid> modGrid, bool interpol2); // in order to use interpolate2
 	void setGrid(ref_ptr<VectorGrid> grid);
 	void setModulationGrid(ref_ptr<ScalarGrid> modGrid);
 	ref_ptr<VectorGrid> getGrid();
 	ref_ptr<ScalarGrid> getModulationGrid();
 	void setReflective(bool gridReflective, bool modGridReflective);
 	Vector3d getField(const Vector3d &position) const;
+	void setInterpol(bool interpol2);			// in order to use interpolate2 
+	bool getInterpol() const; 				// in order to use interpolate2
 };
 
 } // namespace crpropa
