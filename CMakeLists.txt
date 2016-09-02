@@ -324,6 +324,7 @@ add_library(crpropa SHARED
 	src/magneticField/MagneticFieldGrid.cpp
 	src/magneticField/JF12Field.cpp
 	src/magneticField/PshirkovField.cpp
+	src/magneticField/ModulatedQuimbyMagneticField
 	${CRPROPA_EXTRA_SOURCES}
 )
 target_link_libraries(crpropa ${CRPROPA_EXTRA_LIBRARIES})

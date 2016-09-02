@@ -8,6 +8,8 @@
 
 #include "quimby/MagneticField.h"
 
+#include "crpropa/Grid.h"
+
 #include <stdexcept>
 #include <sstream>
 
@@ -21,7 +23,6 @@ class QuimbyMagneticField: public MagneticField {
 	quimby::ref_ptr<quimby::MagneticField> field;
 public:
 	QuimbyMagneticField(quimby::ref_ptr<quimby::MagneticField> field) : field(field) {
-
 	}
 	QuimbyMagneticField(quimby::MagneticField *field) : field(field) {
 	}
@@ -56,6 +57,28 @@ public:
 	}
 };
 #endif
+
+class ModulatedQuimbyMagneticField: public MagneticField {
+	quimby::ref_ptr<quimby::MagneticField> field;	
+	ref_ptr<VectorGrid> grid;
+public:
+	//ModulatedQuimbyMagneticField(quimby::ref_ptr<quimby::MagneticField> field, ref_ptr<VectorGrid> grid) : field(field){ 
+	//}
+	//ModulatedQuimbyMagneticField(quimby::MagneticField *field, ref_ptr<VectorGrid> grid) : field(field){ 
+	//}	
+	ModulatedQuimbyMagneticField(quimby::ref_ptr<quimby::MagneticField> field, ref_ptr<VectorGrid> grid);
+	ModulatedQuimbyMagneticField(quimby::MagneticField *field, ref_ptr<VectorGrid> grid);
+	//ModulatedQuimbyMagneticField() {
+	//}
+	
+	void setGrid(ref_ptr<VectorGrid> grid);
+	void setQuimby(quimby::ref_ptr<quimby::MagneticField> field);
+	ref_ptr<VectorGrid> getGrid();
+	quimby::ref_ptr<quimby::MagneticField> getQuimby();
+	//void setReflective(bool gridReflective, bool modGridReflective);
+	double getQuimbyFieldStrength(const Vector3d &position) const;	
+	Vector3d getField(const Vector3d &position) const;
+};
 
 } // namespace crpropa
 
