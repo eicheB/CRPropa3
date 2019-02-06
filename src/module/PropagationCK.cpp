@@ -118,6 +118,17 @@ void PropagationCK::process(Candidate *candidate) const {
 	current.setDirection(yOut.u.getUnitVector());
 	candidate->setCurrentStep(step);
 	candidate->setNextStep(newStep);
+	
+	// Debugging and Testing
+    	// Delete comments if additional information should be stored in candidate
+	// This property "Bstr" stores the Bfield strength of the current position
+	/*
+	const std::string Bstr = "magStrength";
+	Vector3d curPos = candidate->previous.getPosition();
+	double bstr = field->getField(curPos, z).getR();
+	candidate->setProperty(Bstr, bstr);
+	*/
+	
 }
 
 void PropagationCK::setField(ref_ptr<MagneticField> f) {
