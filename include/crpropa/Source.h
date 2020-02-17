@@ -250,6 +250,28 @@ public:
 };
 
 /**
+ @class SourceUniformCone
+ @brief Uniform random source positions inside a Cone
+ */
+
+class SourceUniformCone: public SourceFeature {
+	Vector3d origin;
+	Vector3d coneDir;
+	double height;
+	double angularRadius;
+        double minHeight;
+public:
+	/** Constructor
+	 @param origin	        lower middle of cone
+	 @param height	        height of the cone
+	 @param angularRadius	angular Radius of the cone
+*/
+	SourceUniformCone(Vector3d origin, Vector3d coneDir, double height, double angularRadius, double minHeight=0.);
+	void prepareParticle(ParticleState &particle) const;
+	void setDescription();
+};
+
+/**
 @class SourceSNRDistribution
 @brief Source distribution that follows the Galactic SNR distribution
 

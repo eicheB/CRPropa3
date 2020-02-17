@@ -361,6 +361,33 @@ void SourceUniformCylinder::setDescription() {
 }
 
 // ---------------------------------------------------------------------------
+SourceUniformCone::SourceUniformCone(Vector3d origin, Vector3d coneDir, double height, double angularRadius, double minHeight) :
+    origin(origin), coneDir(coneDir), height(height), angularRadius(angularRadius), minHeight(minHeight) {
+}
+
+void SourceUniformCone::prepareParticle(ParticleState& particle) const {
+  Random &random = Random::instance();
+  Vector3d rdConeVec = random.randConeVector(coneDir/coneDir.getR(), angularRadius);
+  double rdHeight = 0.;
+  while(rdHeight <= minHeight){
+  rdHeight = height * random.rand();
+  } 
+  Vector3d pos = rdConeVec * rdHeight;
+  particle.setPosition(pos + origin);
+  }
+
+void SourceUniformCone::setDescription() {
+	std::stringstream ss;
+	ss << "SourceUniformCone: Random uniform position in cone with ";
+	ss << "origin = " << origin / Mpc << " Mpc and ";
+        ss << "coneDir = " << coneDir/coneDir.getR()  << " and ";
+	ss << "angularRadius = " << angularRadius << " and";
+	ss << "height = " << height / Mpc << " Mpc\n";
+        ss << "minHeight = " << minHeight / Mpc << " Mpc\n";
+	description = ss.str();
+}
+
+// ---------------------------------------------------------------------------
 SourceSNRDistribution::SourceSNRDistribution() :
     R_earth(8.5*kpc), beta(3.53), Zg(0.3*kpc) {
 	set_frMax(8.5*kpc, 3.53);
